@@ -6,9 +6,10 @@ import { Swipeable } from 'react-native-gesture-handler';
 interface SwipeableEntryProps {
   item: any;
   onDelete: (id: number) => void;
+  onEdit: (id: number) => void;
 }
 
-export default function SwipeableEntry({ item, onDelete }: SwipeableEntryProps) {
+export default function SwipeableEntry({ item, onDelete, onEdit }: SwipeableEntryProps) {
   const renderRightActions = () => {
     return (
       <TouchableOpacity
@@ -20,9 +21,17 @@ export default function SwipeableEntry({ item, onDelete }: SwipeableEntryProps) 
       </TouchableOpacity>
     );
   };
+  const renderLeftActions = () => {
+    return (
+      <TouchableOpacity style={styles.editButton} onPress={() => onEdit(item.entry_id)}>
+        <Ionicons name="pencil" size={24} color="white" />
+        <Text style={styles.editText}>Edit</Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
-    <Swipeable renderRightActions={renderRightActions}>
+    <Swipeable renderRightActions={renderRightActions} renderLeftActions={renderLeftActions}>
       <View style={styles.entry}>
         <Text style={styles.title}>
           {item && 'title' in item ? (item as any).title : 'No Title'}
@@ -66,4 +75,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
   },
+  editButton: {
+    backgroundColor: '#007bff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 80,
+    height: '80%',
+    marginVertical: 8,
+    marginLeft: 8,
+  },
+  editText: {
+    color: 'white',
+    fontSize: 12,
+    marginTop: 4,
+  }
 });

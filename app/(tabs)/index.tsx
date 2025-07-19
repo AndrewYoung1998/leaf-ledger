@@ -11,12 +11,13 @@ export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [entryId, setEntryId] = useState<number | null>(null);
   // Fetch entries on mount and after adding
   const fetchEntries = async () => {
     const data = await db.getJournalEntries();
     setEntries(data);
-    console.log(data);
   };
+  // Add entry
   const handleAdd = async () => {
     await addJournalEntry({
       title,
@@ -37,6 +38,24 @@ export default function HomeScreen() {
     const entries = await db.getJournalEntries();
     setEntries(entries);
   };
+  // Edit entry
+  const handleEdit = async (entry_id: number) => {
+    setEntryId(entry_id);
+    setModalVisible(true);
+    setTitle(journalEntries.find(entry => entry.entry_id === entry_id)?.title ?? '');
+    setContent(journalEntries.find(entry => entry.entry_id === entry_id)?.content ?? '');
+  };
+  // Save edit
+  const handleSaveEdit = async () => {
+    if (entryId) {
+      await db.editJournalEntry(entryId, title, content);
+      setModalVisible(false); // Hide modal after saving
+      setEntryId(null); // Reset entryId
+      setTitle('');
+      setContent('');
+      fetchEntries();
+    }
+  };
   useEffect(() => {
     (async () => {
       await db.initializeDatabase();
@@ -51,7 +70,7 @@ export default function HomeScreen() {
           data={journalEntries}
           keyExtractor={item => item.entry_id?.toString() ?? Math.random().toString()}
           renderItem={({ item }) => (
-            <SwipeableEntry item={item} onDelete={handleDelete} />
+            <SwipeableEntry item={item} onDelete={handleDelete} onEdit={handleEdit} />
           )}
           ListEmptyComponent={
             <Text style={{ textAlign: 'center', marginTop: 20 }}>No entries yet.</Text>
@@ -81,8 +100,20 @@ export default function HomeScreen() {
                 style={styles.input}
                 multiline
               />
-              <Button title="Add Entry" onPress={handleAdd} />
-              <Button title="Cancel" onPress={() => setModalVisible(false)} color="gray" />
+            <Button 
+              title={entryId ? "Save Edit" : "Add Entry"} 
+              onPress={entryId ? handleSaveEdit : handleAdd} 
+            />
+            <Button 
+              title="Cancel" 
+              onPress={() => {
+                setModalVisible(false);
+                setEntryId(null);
+                setTitle('');
+                setContent('');
+              }} 
+              color="gray" 
+            />
             </View>
           </View>
         </Modal>
