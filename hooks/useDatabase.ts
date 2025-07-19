@@ -1,17 +1,22 @@
+import { JournalEntry } from '@/interfaces/JournalEntries';
 import * as SQLite from 'expo-sqlite';
 
 const db = SQLite.openDatabaseSync('leafledger.db');
 
-function executeSqlAsync(sql: string, params: any[] = []): Promise<any> {
-    return new Promise((resolve, reject) => {
-      try {
-        const result = db.execSync(sql);
-        resolve(result);
-      } catch (error) {
-        reject(error);
-      }
+function executeSqlAsync(sql: string, params: any[] = []): Promise<SQLite.SQLiteRunResult> {
+  // db.runAsync already returns a Promise, so no need for 'new Promise' wrapper.
+  // It's the correct method for executing DDL (CREATE TABLE) and DML (INSERT, UPDATE, DELETE)
+  // statements with parameters.
+  return db.runAsync(sql, params)
+    .then((result) => {
+      // console.log("SQL Execution Result:", result); // Uncomment for debugging if needed
+      return result;
+    })
+    .catch((error) => {
+      console.error("Error executing SQL:", sql, "with params:", params, "Error:", error);
+      throw error; // Re-throw to propagate the error
     });
-  }
+}
 
 export async function initializeDatabase() {
   // Create tables
@@ -88,17 +93,42 @@ export async function addJournalEntry(entry: {
   );
 }
 
-export async function getJournalEntries(where?: string, params: any[] = []) {
+export async function getJournalEntries(where?: string, params: any[] = []): Promise<JournalEntry[]> {
   let query = 'SELECT * FROM JournalEntries';
-  if (where) query += ` WHERE ${where}`;
-  return (await executeSqlAsync(query, params)).rows._array;
+  if (where) {
+    query += ` WHERE ${where}`;
+  }
+  // Use fetchSqlAsync for SELECT queries to get the actual rows
+  return await fetchSqlAsync<JournalEntry>(query, params);
 }
-
+async function fetchSqlAsync<T>(sql: string, params: any[] = []): Promise<T[]> {
+  try {
+    // db.getAllAsync is specifically for SELECT queries that return multiple rows.
+    const rows = await db.getAllAsync(sql, params);
+    return rows as T[]; // Cast to the expected array of objects
+  } catch (error) {
+    console.error("Error executing SQL (getAllAsync):", sql, "with params:", params, "Error:", error);
+    throw error;
+  }
+}
+async function deleteJournalEntry(entry_id: number) {
+  return executeSqlAsync(
+    `DELETE FROM JournalEntries WHERE entry_id = ?`,
+    [entry_id]
+  );
+}
+async function deleteJournalEntries() {
+  return executeSqlAsync(
+    `DELETE FROM JournalEntries`
+  );
+}
 // Add similar CRUD functions for Tags, EntryTags, Categories, EntryCategories, ProductConsumption as needed
 
 export default {
   initializeDatabase,
   addJournalEntry,
   getJournalEntries,
+  deleteJournalEntry,
+  deleteJournalEntries,
   // ...other CRUD functions
 };

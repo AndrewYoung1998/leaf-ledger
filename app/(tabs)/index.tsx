@@ -1,10 +1,13 @@
 import FAB from '@/components/FAB';
+import SwipeableEntry from '@/components/SwipeableEntry';
+import { JournalEntry } from '@/interfaces/JournalEntries';
 import { useEffect, useState } from 'react';
 import { Button, FlatList, Modal, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import db, { addJournalEntry } from '../../hooks/useDatabase';
 
 export default function HomeScreen() {
-  const [journalEntries, setEntries] = useState([]);
+  const [journalEntries, setEntries] = useState<JournalEntry[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -27,56 +30,64 @@ export default function HomeScreen() {
     setContent('');
     const entries = await db.getJournalEntries();
     setEntries(entries);
-    // Optionally refresh your data here
+    fetchEntries();
   };
-  
+  const handleDelete = async (entry_id: number) => {
+    await db.deleteJournalEntry(entry_id);
+    const entries = await db.getJournalEntries();
+    setEntries(entries);
+  };
   useEffect(() => {
     (async () => {
       await db.initializeDatabase();
       fetchEntries();
-      console.log(journalEntries);
     })();
-  }, [journalEntries]);
+  }, []);
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <Text>Journal Entries</Text>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }}>
         <FlatList
           data={journalEntries}
-          keyExtractor={(item, index) => (item && 'entry_id' in item ? String((item as any).entry_id) : String(index))}
+          keyExtractor={item => item.entry_id?.toString() ?? Math.random().toString()}
           renderItem={({ item }) => (
-            <Text>{item && 'title' in item ? (item as any).title : 'No Title'}</Text>
+            <SwipeableEntry item={item} onDelete={handleDelete} />
           )}
+          ListEmptyComponent={
+            <Text style={{ textAlign: 'center', marginTop: 20 }}>No entries yet.</Text>
+          }
         />
-        <FAB onPress={() => setModalVisible(true)}  />
 
-      <Modal
-        visible={modalVisible}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <TextInput
-              placeholder="Title"
-              value={title}
-              onChangeText={setTitle}
-              style={styles.input}
-            />
-            <TextInput
-              placeholder="Content"
-              value={content}
-              onChangeText={setContent}
-              style={styles.input}
-              multiline
-            />
-            <Button title="Add Entry" onPress={handleAdd} />
-            <Button title="Cancel" onPress={() => setModalVisible(false)} color="gray" />
+        <FAB onPress={() => setModalVisible(true)} />
+
+        <Modal
+          visible={modalVisible}
+          animationType="slide"
+          transparent
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <TextInput
+                placeholder="Title"
+                value={title}
+                onChangeText={setTitle}
+                style={styles.input}
+              />
+              <TextInput
+                placeholder="Content"
+                value={content}
+                onChangeText={setContent}
+                style={styles.input}
+                multiline
+              />
+              <Button title="Add Entry" onPress={handleAdd} />
+              <Button title="Cancel" onPress={() => setModalVisible(false)} color="gray" />
+            </View>
           </View>
-        </View>
-      </Modal>
-    </SafeAreaView>
+        </Modal>
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
 
