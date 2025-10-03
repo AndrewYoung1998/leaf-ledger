@@ -9,7 +9,7 @@ interface SwipeableEntryProps {
   onEdit: (id: number) => void;
 }
 
-export default function SwipeableEntry({ item, onDelete, onEdit }: SwipeableEntryProps) {
+export function SwipeableEntry({ item, onDelete, onEdit }: SwipeableEntryProps) {
   const renderRightActions = () => {
     return (
       <TouchableOpacity
@@ -34,10 +34,15 @@ export default function SwipeableEntry({ item, onDelete, onEdit }: SwipeableEntr
     <Swipeable renderRightActions={renderRightActions} renderLeftActions={renderLeftActions}>
       <View style={styles.entry}>
         <Text style={styles.title}>
-          {item && 'title' in item ? (item as any).title : 'No Title'}
+          {item && 'title' in item ? (item as any).title : 'No Name'}
         </Text>
         <Text>{item.content}</Text>
-        <Text style={styles.date}>{item.entry_date}</Text>
+        <Text>{item.cigar ? 'Cigar' : item.marijuana ? 'Marijuana' : 'None'}</Text>
+        <Text style={styles.date}>
+          {item.entry_date
+            ? new Date(item.entry_date).toLocaleDateString()
+            : ''}
+        </Text>
       </View>
     </Swipeable>
   );
@@ -83,6 +88,7 @@ const styles = StyleSheet.create({
     height: '80%',
     marginVertical: 8,
     marginLeft: 8,
+    borderRadius: 8,
   },
   editText: {
     color: 'white',

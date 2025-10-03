@@ -1,21 +1,45 @@
+import EntryModal from '@/components/EntryModal';
 import FAB from '@/components/FAB';
-import SwipeableEntry from '@/components/SwipeableEntry';
+import Filter, { FilterType } from '@/components/Filter';
+import { SwipeableEntry } from '@/components/SwipeableEntry';
 import { JournalEntry } from '@/interfaces/JournalEntries';
 import { useEffect, useState } from 'react';
-import { Button, FlatList, Modal, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, SafeAreaView, StyleSheet, Text } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import db, { addJournalEntry } from '../../hooks/useDatabase';
-
 export default function HomeScreen() {
   const [journalEntries, setEntries] = useState<JournalEntry[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [entryId, setEntryId] = useState<number | null>(null);
+  const [cigar, setCigar] = useState(false);
+  const [marijuana, setMarijuana] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
+  const [search, setSearch] = useState('');
   // Fetch entries on mount and after adding
   const fetchEntries = async () => {
     const data = await db.getJournalEntries();
-    setEntries(data);
+    const filtered = data.filter(entry => {
+      // Apply search filter first
+      if (search.length > 0) {
+        const matchesSearch = entry.title.toLowerCase().includes(search.toLowerCase()) || 
+                             entry.content.toLowerCase().includes(search.toLowerCase());
+        if (!matchesSearch) return false;
+      }
+      // Apply category filter
+      if (selectedFilter === 'cigar') {
+        return entry.cigar;
+      }
+      if (selectedFilter === 'marijuana') {
+        return entry.marijuana;
+      }
+      if (selectedFilter === 'none') {
+        return !entry.cigar && !entry.marijuana;
+      }
+      return true;
+    });
+    setEntries(filtered);
   };
   // Add entry
   const handleAdd = async () => {
@@ -23,6 +47,8 @@ export default function HomeScreen() {
       title,
       content,
       entry_date: new Date().toISOString(),
+      cigar: cigar,
+      marijuana: marijuana,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });
@@ -48,7 +74,7 @@ export default function HomeScreen() {
   // Save edit
   const handleSaveEdit = async () => {
     if (entryId) {
-      await db.editJournalEntry(entryId, title, content);
+      await db.editJournalEntry(entryId, title, content, cigar, marijuana);
       setModalVisible(false); // Hide modal after saving
       setEntryId(null); // Reset entryId
       setTitle('');
@@ -61,11 +87,12 @@ export default function HomeScreen() {
       await db.initializeDatabase();
       fetchEntries();
     })();
-  }, []);
+  }, [selectedFilter, search]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
+        <Filter selected={selectedFilter} onChange={setSelectedFilter} search={search} onSearchChange={setSearch} />
         <FlatList
           data={journalEntries}
           keyExtractor={item => item.entry_id?.toString() ?? Math.random().toString()}
@@ -79,44 +106,26 @@ export default function HomeScreen() {
 
         <FAB onPress={() => setModalVisible(true)} />
 
-        <Modal
+        <EntryModal
           visible={modalVisible}
-          animationType="slide"
-          transparent
-          onRequestClose={() => setModalVisible(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <TextInput
-                placeholder="Title"
-                value={title}
-                onChangeText={setTitle}
-                style={styles.input}
-              />
-              <TextInput
-                placeholder="Content"
-                value={content}
-                onChangeText={setContent}
-                style={styles.input}
-                multiline
-              />
-            <Button 
-              title={entryId ? "Save Edit" : "Add Entry"} 
-              onPress={entryId ? handleSaveEdit : handleAdd} 
-            />
-            <Button 
-              title="Cancel" 
-              onPress={() => {
-                setModalVisible(false);
-                setEntryId(null);
-                setTitle('');
-                setContent('');
-              }} 
-              color="gray" 
-            />
-            </View>
-          </View>
-        </Modal>
+          title={title}
+          content={content}
+          setTitle={setTitle}
+          setContent={setContent}
+          onSubmit={entryId ? handleSaveEdit : handleAdd}
+          onCancel={() => {
+            setModalVisible(false);
+            setEntryId(null);
+            setTitle('');
+            setContent('');
+          }}
+          submitLabel={entryId ? 'Save Edit' : 'Add Entry'}
+          cigar={cigar}
+          marijuana={marijuana}
+          setCigar={setCigar}
+          setMarijuana={setMarijuana}
+
+        />
       </SafeAreaView>
     </GestureHandlerRootView>
   );

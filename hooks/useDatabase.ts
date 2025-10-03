@@ -24,18 +24,19 @@ function executeSqlAsync(sql: string, params: any[] = []): Promise<SQLite.SQLite
 }
 
 export async function initializeDatabase() {
-  // Create tables
+
   await executeSqlAsync(`
     CREATE TABLE IF NOT EXISTS JournalEntries (
       entry_id INTEGER PRIMARY KEY AUTOINCREMENT,
       title TEXT,
       content TEXT,
       entry_date TEXT,
+      cigar BOOLEAN,
+      marijuana BOOLEAN,
       created_at TEXT,
       updated_at TEXT
     );
   `);
-
   await executeSqlAsync(`
     CREATE TABLE IF NOT EXISTS Tags (
       tag_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -88,12 +89,14 @@ export async function addJournalEntry(entry: {
   title: string;
   content: string;
   entry_date: string;
+  cigar: boolean;
+  marijuana: boolean;
   created_at: string;
   updated_at: string;
 }) {
   return executeSqlAsync(
-    `INSERT INTO JournalEntries (title, content, entry_date, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`,
-    [entry.title, entry.content, entry.entry_date, entry.created_at, entry.updated_at]
+    `INSERT INTO JournalEntries (title, content, entry_date, cigar, marijuana, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [entry.title, entry.content, entry.entry_date, entry.cigar, entry.marijuana, entry.created_at, entry.updated_at]
   );
 }
 
@@ -115,10 +118,10 @@ async function fetchSqlAsync<T>(sql: string, params: any[] = []): Promise<T[]> {
     throw error;
   }
 }
-async function editJournalEntry(entry_id: number, title: string, content: string) {
+async function editJournalEntry(entry_id: number, title: string, content: string, cigar: boolean, marijuana: boolean) {
   return executeSqlAsync(
-    `UPDATE JournalEntries SET title = ?, content = ? WHERE entry_id = ?`,
-    [title, content, entry_id]
+    `UPDATE JournalEntries SET title = ?, content = ?, cigar = ?, marijuana = ? WHERE entry_id = ?`,
+    [title, content, cigar, marijuana, entry_id]
   );
 }
 async function deleteJournalEntry(entry_id: number) {
