@@ -1,4 +1,4 @@
- import Checkbox from 'expo-checkbox';
+import Checkbox from 'expo-checkbox';
 import React, { useEffect, useState } from 'react';
 import { Button, Modal, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -20,6 +20,12 @@ interface EntryModalProps {
 export default function EntryModal({ visible, title, content, setTitle, setContent, onSubmit, onCancel, submitLabel = 'Save', cigar, marijuana, setCigar, setMarijuana }: EntryModalProps) {
   const [cigarChecked, setCigarChecked] = useState(cigar);
   const [marijuanaChecked, setMarijuanaChecked] = useState(marijuana);
+  const [consumption, setConsumption] = useState({
+    edibles:false,
+    vape:false,
+    smoke:false,
+    tincture:false
+  })
   useEffect(() => {
     setCigarChecked(cigar);
     setMarijuanaChecked(marijuana);
@@ -55,16 +61,34 @@ export default function EntryModal({ visible, title, content, setTitle, setConte
                   setCigar(!cigarChecked);
                 }} />
                 <Text>Cigar</Text>
-                
-            </View>
-            <View style={styles.checkboxItem}>
-            <Checkbox style={styles.checkbox} value={marijuanaChecked} onValueChange={() => {
-              setMarijuanaChecked(!marijuanaChecked);
-              setMarijuana(!marijuanaChecked);
-            }} />
+                <Checkbox style={styles.checkbox} value={marijuanaChecked} onValueChange={() => {
+                  setMarijuanaChecked(!marijuanaChecked);
+                  setMarijuana(!marijuanaChecked);
+                }} />
                 <Text>Marijuana</Text>
             </View>
           </View>
+          {marijuanaChecked && (
+            <View style={styles.checkboxContainer}>
+              <Text>Consumption Type</Text>
+              <View style={styles.checkboxItem}>
+                <Checkbox style={styles.checkbox} value={consumption.edibles} onValueChange={() =>{
+                  setConsumption(prev => ({...prev, edibles: !prev.edibles}))
+                }}/>
+                <Text>Edibles</Text>
+                <Checkbox style={styles.checkbox} value={consumption.vape} onValueChange={() =>{
+                  setConsumption(prev => ({...prev, vape: !prev.vape}))
+                }} />
+                <Text>Vape</Text>
+              </View>
+              <View style={styles.checkboxItem}>
+                <Checkbox style={styles.checkbox} />
+                <Text>Smoke</Text>
+                <Checkbox style={styles.checkbox} />
+                <Text>Tincture</Text>
+              </View>
+            </View>
+          )}
           <Button title={submitLabel} onPress={onSubmit} />
           <Button title="Cancel" onPress={onCancel} color="gray" />
         </View>
@@ -94,17 +118,17 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   checkboxContainer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     gap: 12,
     justifyContent: 'center',
+    marginBottom: 12,
   },
   checkbox: {
-   
   },
   checkboxItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap:5    
+    gap:10   
   },
 }); 

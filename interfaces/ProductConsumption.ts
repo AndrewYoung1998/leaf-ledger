@@ -1,9 +1,9 @@
 export interface ProductConsumption {
-    consumption_id: number;
-    consumption_type: string;
-    quantity: number;
-    unit: string;
-    details: string;
-    consumption_time: string;
-    entry_id: number;
+    consumption_id: number | null;
+    consumption_type: string | null;
+    quantity: number | null;
+    unit: string | null;
+    details: string | null;
+    consumption_time: string | null;
+    entry_id: number | null;
 }

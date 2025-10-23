@@ -17,6 +17,7 @@ export default function HomeScreen() {
   const [marijuana, setMarijuana] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
   const [search, setSearch] = useState('');
+  //const [consumptionType, setConsumption] = useState<ProductConsumption[]>([]);
   // Fetch entries on mount and after adding
   const fetchEntries = async () => {
     const data = await db.getJournalEntries();
@@ -52,10 +53,23 @@ export default function HomeScreen() {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });
+    const entries = await db.getJournalEntries();
+    // Get the latest entry (assuming newest by created_at or max entry_id)
+    const latestEntry = entries.reduce((prev, current) => {
+      return (prev.entry_id > current.entry_id) ? prev : current;
+    }, entries[0]);
+    const latestEntryId = latestEntry ? latestEntry.entry_id : null;
+    await db.addProductConsumption({
+      consumption_type: null, // This should be defined in your state
+      quantity: null,
+      unit: null,
+      details: null,
+      consumption_time: new Date().toISOString(),
+      entry_id: latestEntryId
+    });
     setModalVisible(false);
     setTitle('');
     setContent('');
-    const entries = await db.getJournalEntries();
     setEntries(entries);
     fetchEntries();
   };
@@ -70,6 +84,8 @@ export default function HomeScreen() {
     setModalVisible(true);
     setTitle(journalEntries.find(entry => entry.entry_id === entry_id)?.title ?? '');
     setContent(journalEntries.find(entry => entry.entry_id === entry_id)?.content ?? '');
+    setCigar(journalEntries.find(entry => entry.entry_id === entry_id)?.cigar ?? false);
+    setMarijuana(journalEntries.find(entry => entry.entry_id === entry_id)?.marijuana ?? false);
   };
   // Save edit
   const handleSaveEdit = async () => {

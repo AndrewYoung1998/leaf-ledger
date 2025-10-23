@@ -195,21 +195,29 @@ async function deleteEntryCategory(entry_category_id: number) {
     [entry_category_id]
   );
 }
-async function addProductConsumption(product_consumption: ProductConsumption) {
-  return executeSqlAsync(
-    `INSERT INTO ProductConsumption (consumption_type, quantity, unit, details, consumption_time, entry_id) VALUES (?, ?, ?, ?, ?, ?)`,
-    [product_consumption.consumption_type, product_consumption.quantity, product_consumption.unit, product_consumption.details, product_consumption.consumption_time, product_consumption.entry_id]
-  );
-}
-async function getProductConsumptions(): Promise<ProductConsumption[]> {
-  return fetchSqlAsync<ProductConsumption>(`SELECT * FROM ProductConsumption`);
-}
-async function deleteProductConsumption(consumption_id: number) {
-  return executeSqlAsync(
-    `DELETE FROM ProductConsumption WHERE consumption_id = ?`,
-    [consumption_id]
-  );
-}
+export async function addProductConsumption(product_consumption: {
+  consumption_type: string | null;
+  quantity: number | null;
+  unit: string | null;
+  details: string | null;
+  consumption_time: string | null;
+  entry_id: number | null;
+}){
+    return executeSqlAsync(
+      `INSERT INTO ProductConsumption (consumption_type, quantity, unit, details, consumption_time, entry_id) VALUES (?, ?, ?, ?, ?, ?)`,
+      [product_consumption.consumption_type, product_consumption.quantity, product_consumption.unit, product_consumption.details, product_consumption.consumption_time, product_consumption.entry_id]
+    );
+  }
+  async function getProductConsumptions(): Promise<ProductConsumption[]> {
+    return fetchSqlAsync<ProductConsumption>(`SELECT * FROM ProductConsumption`);
+  }
+  async function deleteProductConsumption(consumption_id: number) {
+    return executeSqlAsync(
+      `DELETE FROM ProductConsumption WHERE consumption_id = ?`,
+      [consumption_id]
+    );
+  }
+
 
 // Add similar CRUD functions for Tags, EntryTags, Categories, EntryCategories, ProductConsumption as needed
 
