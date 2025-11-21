@@ -42,13 +42,11 @@ export default function EntryModal({ visible, title, content, setTitle, setConte
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <TextInput
-            
             value={title}
             onChangeText={setTitle}
             style={styles.input}
           />
           <TextInput
-            
             value={content}
             onChangeText={setContent}
             style={styles.input}

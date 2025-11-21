@@ -71,7 +71,7 @@ export default function HomeScreen() {
     setTitle('');
     setContent('');
     setEntries(entries);
-    fetchEntries();
+    await fetchEntries();
   };
   const handleDelete = async (entry_id: number) => {
     await db.deleteJournalEntry(entry_id);
@@ -95,13 +95,13 @@ export default function HomeScreen() {
       setEntryId(null); // Reset entryId
       setTitle('');
       setContent('');
-      fetchEntries();
+      await fetchEntries();
     }
   };
   useEffect(() => {
     (async () => {
       await db.initializeDatabase();
-      fetchEntries();
+      await fetchEntries();
     })();
   }, [selectedFilter, search]);
 
