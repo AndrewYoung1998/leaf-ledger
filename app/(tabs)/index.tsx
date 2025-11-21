@@ -6,7 +6,7 @@ import { JournalEntry } from '@/interfaces/JournalEntries';
 import { useEffect, useState } from 'react';
 import { FlatList, SafeAreaView, StyleSheet, Text } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import db, { addJournalEntry } from '../../hooks/useDatabase';
+import db, { addJournalEntry } from '../../hooks/database/useDatabase';
 export default function HomeScreen() {
   const [journalEntries, setEntries] = useState<JournalEntry[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -15,10 +15,20 @@ export default function HomeScreen() {
   const [entryId, setEntryId] = useState<number | null>(null);
   const [cigar, setCigar] = useState(false);
   const [marijuana, setMarijuana] = useState(false);
+  const [photo_uri, setPhotoUri] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
   const [search, setSearch] = useState('');
   //const [consumptionType, setConsumption] = useState<ProductConsumption[]>([]);
   // Fetch entries on mount and after adding
+
+  const resetEntryUseStates = () => {
+    setTitle('');
+    setContent('');
+    setCigar(false);
+    setMarijuana(false);
+    setPhotoUri('');
+  }
+
   const fetchEntries = async () => {
     const data = await db.getJournalEntries();
     const filtered = data.filter(entry => {
@@ -50,6 +60,7 @@ export default function HomeScreen() {
       entry_date: new Date().toISOString(),
       cigar: cigar,
       marijuana: marijuana,
+      photo_uri: photo_uri,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });
@@ -68,8 +79,7 @@ export default function HomeScreen() {
       entry_id: latestEntryId
     });
     setModalVisible(false);
-    setTitle('');
-    setContent('');
+    resetEntryUseStates();
     setEntries(entries);
     await fetchEntries();
   };
@@ -86,15 +96,15 @@ export default function HomeScreen() {
     setContent(journalEntries.find(entry => entry.entry_id === entry_id)?.content ?? '');
     setCigar(journalEntries.find(entry => entry.entry_id === entry_id)?.cigar ?? false);
     setMarijuana(journalEntries.find(entry => entry.entry_id === entry_id)?.marijuana ?? false);
+    setPhotoUri(journalEntries.find(entry => entry.entry_id === entry_id)?.photo_uri ?? '');
   };
   // Save edit
   const handleSaveEdit = async () => {
     if (entryId) {
-      await db.editJournalEntry(entryId, title, content, cigar, marijuana);
+      await db.editJournalEntry(entryId, title, content, cigar, marijuana, photo_uri);
       setModalVisible(false); // Hide modal after saving
       setEntryId(null); // Reset entryId
-      setTitle('');
-      setContent('');
+      resetEntryUseStates();
       await fetchEntries();
     }
   };
@@ -132,15 +142,15 @@ export default function HomeScreen() {
           onCancel={() => {
             setModalVisible(false);
             setEntryId(null);
-            setTitle('');
-            setContent('');
+            resetEntryUseStates();
           }}
           submitLabel={entryId ? 'Save Edit' : 'Add Entry'}
           cigar={cigar}
           marijuana={marijuana}
+          photo_uri={photo_uri}
           setCigar={setCigar}
           setMarijuana={setMarijuana}
-
+          setPhotoUri={setPhotoUri}
         />
       </SafeAreaView>
     </GestureHandlerRootView>

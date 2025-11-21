@@ -1,6 +1,7 @@
 import Checkbox from 'expo-checkbox';
 import React, { useEffect, useState } from 'react';
-import { Button, Modal, StyleSheet, Text, TextInput, View } from 'react-native';
+import {Alert, Button, Modal, StyleSheet, Text, TextInput, View, Image} from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 
 interface EntryModalProps {
   visible: boolean;
@@ -13,11 +14,13 @@ interface EntryModalProps {
   submitLabel?: string;
   cigar: boolean;
   marijuana: boolean;
+  photo_uri: string;
   setCigar: (v: boolean) => void;
   setMarijuana: (v: boolean) => void;
+  setPhotoUri: (v: string) => void;
 }
 
-export default function EntryModal({ visible, title, content, setTitle, setContent, onSubmit, onCancel, submitLabel = 'Save', cigar, marijuana, setCigar, setMarijuana }: EntryModalProps) {
+export default function EntryModal({ visible, title, content, setTitle, setContent, onSubmit, onCancel, submitLabel = 'Save', cigar, marijuana, photo_uri, setCigar, setMarijuana, setPhotoUri }: EntryModalProps) {
   const [cigarChecked, setCigarChecked] = useState(cigar);
   const [marijuanaChecked, setMarijuanaChecked] = useState(marijuana);
   const [consumption, setConsumption] = useState({
@@ -26,12 +29,35 @@ export default function EntryModal({ visible, title, content, setTitle, setConte
     smoke:false,
     tincture:false
   })
+
   useEffect(() => {
     setCigarChecked(cigar);
     setMarijuanaChecked(marijuana);
     setCigar(cigar);
     setMarijuana(marijuana);
-  }, [cigar, marijuana]);
+    setPhotoUri(photo_uri)
+  }, [cigar, marijuana, photo_uri]);
+
+  const pickImage = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permissionResult.granted) {
+      Alert.alert('Permission required', 'Permission to access the media library is required.');
+      return;
+    }
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setPhotoUri(result.assets[0].uri);
+    }
+  };
+
   return (
     <Modal
       visible={visible}
@@ -87,6 +113,8 @@ export default function EntryModal({ visible, title, content, setTitle, setConte
               </View>
             </View>
           )}
+          <Button title={photo_uri ? "Pick a new image from camera roll (optional)" : "Pick an image from camera roll (optional)"} onPress={pickImage} />
+          {photo_uri && <Image source={{ uri: photo_uri }} style={styles.image} />}
           <Button title={submitLabel} onPress={onSubmit} />
           <Button title="Cancel" onPress={onCancel} color="gray" />
         </View>
@@ -109,6 +137,11 @@ const styles = StyleSheet.create({
     padding: 20,
     elevation: 5,
   },
+  image: {
+    width: 200,
+    height: 200,
+  },
+  /* end image stuff */
   input: {
     borderBottomWidth: 1,
     borderColor: '#ccc',
