@@ -5,10 +5,11 @@ import { JournalEntry } from '@/interfaces/JournalEntries';
 import { ProductConsumption } from '@/interfaces/ProductConsumption';
 import { Tag } from '@/interfaces/Tags';
 import * as SQLite from 'expo-sqlite';
+import {migrateDbIfNeeded} from "@/hooks/database/databaseMigration";
 
 const db = SQLite.openDatabaseSync('leafledger.db');
 
-function executeSqlAsync(sql: string, params: any[] = []): Promise<SQLite.SQLiteRunResult> {
+export function executeSqlAsync(sql: string, params: any[] = []): Promise<SQLite.SQLiteRunResult> {
   // db.runAsync already returns a Promise, so no need for 'new Promise' wrapper.
   // It's the correct method for executing DDL (CREATE TABLE) and DML (INSERT, UPDATE, DELETE)
   // statements with parameters.
@@ -24,7 +25,6 @@ function executeSqlAsync(sql: string, params: any[] = []): Promise<SQLite.SQLite
 }
 
 export async function initializeDatabase() {
-
   await executeSqlAsync(`
     CREATE TABLE IF NOT EXISTS JournalEntries (
       entry_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,6 +37,7 @@ export async function initializeDatabase() {
       updated_at TEXT
     );
   `);
+
   await executeSqlAsync(`
     CREATE TABLE IF NOT EXISTS Tags (
       tag_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -83,6 +84,8 @@ export async function initializeDatabase() {
       FOREIGN KEY (entry_id) REFERENCES JournalEntries(entry_id)
     );
   `);
+
+  await migrateDbIfNeeded(db);
 }
 
 export async function addJournalEntry(entry: {
@@ -91,12 +94,13 @@ export async function addJournalEntry(entry: {
   entry_date: string;
   cigar: boolean;
   marijuana: boolean;
+  photo_uri: string;
   created_at: string;
   updated_at: string;
 }) {
   return executeSqlAsync(
-    `INSERT INTO JournalEntries (title, content, entry_date, cigar, marijuana, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [entry.title, entry.content, entry.entry_date, entry.cigar, entry.marijuana, entry.created_at, entry.updated_at]
+    `INSERT INTO JournalEntries (title, content, entry_date, cigar, marijuana, photo_uri, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [entry.title, entry.content, entry.entry_date, entry.cigar, entry.marijuana, entry.photo_uri, entry.created_at, entry.updated_at]
   );
 }
 
@@ -118,10 +122,10 @@ async function fetchSqlAsync<T>(sql: string, params: any[] = []): Promise<T[]> {
     throw error;
   }
 }
-async function editJournalEntry(entry_id: number, title: string, content: string, cigar: boolean, marijuana: boolean) {
+async function editJournalEntry(entry_id: number, title: string, content: string, cigar: boolean, marijuana: boolean, photo_uri: string) {
   return executeSqlAsync(
-    `UPDATE JournalEntries SET title = ?, content = ?, cigar = ?, marijuana = ? WHERE entry_id = ?`,
-    [title, content, cigar, marijuana, entry_id]
+    `UPDATE JournalEntries SET title = ?, content = ?, cigar = ?, marijuana = ?, photo_uri = ? WHERE entry_id = ?`,
+    [title, content, cigar, marijuana, photo_uri, entry_id]
   );
 }
 async function deleteJournalEntry(entry_id: number) {
@@ -217,7 +221,6 @@ export async function addProductConsumption(product_consumption: {
       [consumption_id]
     );
   }
-
 
 // Add similar CRUD functions for Tags, EntryTags, Categories, EntryCategories, ProductConsumption as needed
 
