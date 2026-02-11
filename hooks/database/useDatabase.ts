@@ -1,3 +1,4 @@
+import { migrateDbIfNeeded } from "@/hooks/database/databaseMigration";
 import { Category } from '@/interfaces/Categories';
 import { EntryCategory } from '@/interfaces/EntryCategories';
 import { EntryTag } from '@/interfaces/EntryTags';
@@ -5,7 +6,6 @@ import { JournalEntry } from '@/interfaces/JournalEntries';
 import { ProductConsumption } from '@/interfaces/ProductConsumption';
 import { Tag } from '@/interfaces/Tags';
 import * as SQLite from 'expo-sqlite';
-import {migrateDbIfNeeded} from "@/hooks/database/databaseMigration";
 
 const db = SQLite.openDatabaseSync('leafledger.db');
 
@@ -94,13 +94,14 @@ export async function addJournalEntry(entry: {
   entry_date: string;
   cigar: boolean;
   marijuana: boolean;
-  photo_uri: string;
+  photo_uris: string[];
   created_at: string;
   updated_at: string;
 }) {
+  const photoUrisJson = JSON.stringify(entry.photo_uris);
   return executeSqlAsync(
     `INSERT INTO JournalEntries (title, content, entry_date, cigar, marijuana, photo_uri, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [entry.title, entry.content, entry.entry_date, entry.cigar, entry.marijuana, entry.photo_uri, entry.created_at, entry.updated_at]
+    [entry.title, entry.content, entry.entry_date, entry.cigar, entry.marijuana, photoUrisJson, entry.created_at, entry.updated_at]
   );
 }
 
@@ -110,7 +111,13 @@ export async function getJournalEntries(where?: string, params: any[] = []): Pro
     query += ` WHERE ${where}`;
   }
   // Use fetchSqlAsync for SELECT queries to get the actual rows
-  return await fetchSqlAsync<JournalEntry>(query, params);
+  const entries = await fetchSqlAsync<any>(query, params);
+
+  // Deserialize photo_uri JSON to photo_uris array
+  return entries.map(entry => ({
+    ...entry,
+    photo_uris: entry.photo_uri ? JSON.parse(entry.photo_uri) : []
+  }));
 }
 async function fetchSqlAsync<T>(sql: string, params: any[] = []): Promise<T[]> {
   try {
@@ -122,10 +129,11 @@ async function fetchSqlAsync<T>(sql: string, params: any[] = []): Promise<T[]> {
     throw error;
   }
 }
-async function editJournalEntry(entry_id: number, title: string, content: string, cigar: boolean, marijuana: boolean, photo_uri: string) {
+async function editJournalEntry(entry_id: number, title: string, content: string, cigar: boolean, marijuana: boolean, photo_uris: string[]) {
+  const photoUrisJson = JSON.stringify(photo_uris);
   return executeSqlAsync(
     `UPDATE JournalEntries SET title = ?, content = ?, cigar = ?, marijuana = ?, photo_uri = ? WHERE entry_id = ?`,
-    [title, content, cigar, marijuana, photo_uri, entry_id]
+    [title, content, cigar, marijuana, photoUrisJson, entry_id]
   );
 }
 async function deleteJournalEntry(entry_id: number) {
@@ -206,21 +214,21 @@ export async function addProductConsumption(product_consumption: {
   details: string | null;
   consumption_time: string | null;
   entry_id: number | null;
-}){
-    return executeSqlAsync(
-      `INSERT INTO ProductConsumption (consumption_type, quantity, unit, details, consumption_time, entry_id) VALUES (?, ?, ?, ?, ?, ?)`,
-      [product_consumption.consumption_type, product_consumption.quantity, product_consumption.unit, product_consumption.details, product_consumption.consumption_time, product_consumption.entry_id]
-    );
-  }
-  async function getProductConsumptions(): Promise<ProductConsumption[]> {
-    return fetchSqlAsync<ProductConsumption>(`SELECT * FROM ProductConsumption`);
-  }
-  async function deleteProductConsumption(consumption_id: number) {
-    return executeSqlAsync(
-      `DELETE FROM ProductConsumption WHERE consumption_id = ?`,
-      [consumption_id]
-    );
-  }
+}) {
+  return executeSqlAsync(
+    `INSERT INTO ProductConsumption (consumption_type, quantity, unit, details, consumption_time, entry_id) VALUES (?, ?, ?, ?, ?, ?)`,
+    [product_consumption.consumption_type, product_consumption.quantity, product_consumption.unit, product_consumption.details, product_consumption.consumption_time, product_consumption.entry_id]
+  );
+}
+async function getProductConsumptions(): Promise<ProductConsumption[]> {
+  return fetchSqlAsync<ProductConsumption>(`SELECT * FROM ProductConsumption`);
+}
+async function deleteProductConsumption(consumption_id: number) {
+  return executeSqlAsync(
+    `DELETE FROM ProductConsumption WHERE consumption_id = ?`,
+    [consumption_id]
+  );
+}
 
 // Add similar CRUD functions for Tags, EntryTags, Categories, EntryCategories, ProductConsumption as needed
 
