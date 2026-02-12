@@ -15,7 +15,7 @@ export default function HomeScreen() {
   const [entryId, setEntryId] = useState<number | null>(null);
   const [cigar, setCigar] = useState(false);
   const [marijuana, setMarijuana] = useState(false);
-  const [photo_uri, setPhotoUri] = useState('');
+  const [photo_uris, setPhotoUris] = useState<string[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
   const [search, setSearch] = useState('');
   //const [consumptionType, setConsumption] = useState<ProductConsumption[]>([]);
@@ -26,7 +26,7 @@ export default function HomeScreen() {
     setContent('');
     setCigar(false);
     setMarijuana(false);
-    setPhotoUri('');
+    setPhotoUris([]);
   }
 
   const fetchEntries = async () => {
@@ -34,8 +34,8 @@ export default function HomeScreen() {
     const filtered = data.filter(entry => {
       // Apply search filter first
       if (search.length > 0) {
-        const matchesSearch = entry.title.toLowerCase().includes(search.toLowerCase()) || 
-                             entry.content.toLowerCase().includes(search.toLowerCase());
+        const matchesSearch = entry.title.toLowerCase().includes(search.toLowerCase()) ||
+          entry.content.toLowerCase().includes(search.toLowerCase());
         if (!matchesSearch) return false;
       }
       // Apply category filter
@@ -60,7 +60,7 @@ export default function HomeScreen() {
       entry_date: new Date().toISOString(),
       cigar: cigar,
       marijuana: marijuana,
-      photo_uri: photo_uri,
+      photo_uris: photo_uris,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });
@@ -96,12 +96,12 @@ export default function HomeScreen() {
     setContent(journalEntries.find(entry => entry.entry_id === entry_id)?.content ?? '');
     setCigar(journalEntries.find(entry => entry.entry_id === entry_id)?.cigar ?? false);
     setMarijuana(journalEntries.find(entry => entry.entry_id === entry_id)?.marijuana ?? false);
-    setPhotoUri(journalEntries.find(entry => entry.entry_id === entry_id)?.photo_uri ?? '');
+    setPhotoUris(journalEntries.find(entry => entry.entry_id === entry_id)?.photo_uris ?? []);
   };
   // Save edit
   const handleSaveEdit = async () => {
     if (entryId) {
-      await db.editJournalEntry(entryId, title, content, cigar, marijuana, photo_uri);
+      await db.editJournalEntry(entryId, title, content, cigar, marijuana, photo_uris);
       setModalVisible(false); // Hide modal after saving
       setEntryId(null); // Reset entryId
       resetEntryUseStates();
@@ -147,10 +147,10 @@ export default function HomeScreen() {
           submitLabel={entryId ? 'Save Edit' : 'Add Entry'}
           cigar={cigar}
           marijuana={marijuana}
-          photo_uri={photo_uri}
+          photo_uris={photo_uris}
           setCigar={setCigar}
           setMarijuana={setMarijuana}
-          setPhotoUri={setPhotoUri}
+          setPhotoUris={setPhotoUris}
         />
       </SafeAreaView>
     </GestureHandlerRootView>

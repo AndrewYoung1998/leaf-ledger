@@ -1,7 +1,15 @@
+import { Ionicons } from '@expo/vector-icons';
 import Checkbox from 'expo-checkbox';
-import React, { useEffect, useState } from 'react';
-import {Alert, Button, Modal, StyleSheet, Text, TextInput, View, Image} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import React, { useEffect, useState } from 'react';
+import { Alert, Button, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+
+interface Consumption {
+  edibles: boolean;
+  vape: boolean;
+  smoke: boolean;
+  tincture: boolean;
+}
 
 interface EntryModalProps {
   visible: boolean;
@@ -14,29 +22,26 @@ interface EntryModalProps {
   submitLabel?: string;
   cigar: boolean;
   marijuana: boolean;
-  photo_uri: string;
+  photo_uris: string[];
   setCigar: (v: boolean) => void;
   setMarijuana: (v: boolean) => void;
-  setPhotoUri: (v: string) => void;
+  setPhotoUris: (v: string[]) => void;
 }
 
-export default function EntryModal({ visible, title, content, setTitle, setContent, onSubmit, onCancel, submitLabel = 'Save', cigar, marijuana, photo_uri, setCigar, setMarijuana, setPhotoUri }: EntryModalProps) {
-  const [cigarChecked, setCigarChecked] = useState(cigar);
-  const [marijuanaChecked, setMarijuanaChecked] = useState(marijuana);
-  const [consumption, setConsumption] = useState({
-    edibles:false,
-    vape:false,
-    smoke:false,
-    tincture:false
+
+export default function EntryModal({ visible, title, content, setTitle, setContent, onSubmit, onCancel, submitLabel = 'Save', cigar, marijuana, photo_uris, setCigar, setMarijuana, setPhotoUris }: EntryModalProps) {
+  const [consumption, setConsumption] = useState<Consumption>({
+    edibles: false,
+    vape: false,
+    smoke: false,
+    tincture: false
   })
+  const [imageModalVisible, setImageModalVisible] = useState(false);
+  const [selectedImageUri, setSelectedImageUri] = useState<string>('');
 
   useEffect(() => {
-    setCigarChecked(cigar);
-    setMarijuanaChecked(marijuana);
-    setCigar(cigar);
-    setMarijuana(marijuana);
-    setPhotoUri(photo_uri)
-  }, [cigar, marijuana, photo_uri]);
+    // No need to sync photo_uris here since it's controlled by parent
+  }, []);
 
   const pickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -54,8 +59,13 @@ export default function EntryModal({ visible, title, content, setTitle, setConte
     });
 
     if (!result.canceled) {
-      setPhotoUri(result.assets[0].uri);
+      // Add to array instead of replacing
+      setPhotoUris([...photo_uris, result.assets[0].uri]);
     }
+  };
+
+  const removeImage = (uriToRemove: string) => {
+    setPhotoUris(photo_uris.filter(uri => uri !== uriToRemove));
   };
 
   return (
@@ -67,58 +77,112 @@ export default function EntryModal({ visible, title, content, setTitle, setConte
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
+          {/* Image Picker / Gallery */}
+          {photo_uris.length === 0 ? (
+            <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
+              <Ionicons name="image-outline" size={32} color="#007bff" />
+              <Text style={styles.imagePickerText}>Add Photo</Text>
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.galleryContainer}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.galleryScroll}>
+                {photo_uris.map((uri, index) => (
+                  <View key={index} style={styles.imageWrapper}>
+                    <TouchableOpacity onPress={() => {
+                      setSelectedImageUri(uri);
+                      setImageModalVisible(true);
+                    }}>
+                      <Image source={{ uri }} style={styles.galleryImage} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.removeImageButton}
+                      onPress={() => removeImage(uri)}
+                    >
+                      <Ionicons name="close-circle" size={24} color="#ff3b30" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </ScrollView>
+              <TouchableOpacity style={styles.addImageButton} onPress={pickImage}>
+                <Ionicons name="add-circle" size={36} color="#007bff" />
+              </TouchableOpacity>
+            </View>
+          )}
+          {/* Title */}
           <TextInput
             value={title}
             onChangeText={setTitle}
             style={styles.input}
+            placeholder="Title"
           />
+          {/* Content */}
           <TextInput
             value={content}
             onChangeText={setContent}
             style={styles.input}
-            multiline
+            multiline={true}
+            placeholder="Content"
           />
+          {/* Cigar / Marijuana */}
           <View style={styles.checkboxContainer}>
             <View style={styles.checkboxItem}>
-                <Checkbox style={styles.checkbox} value={cigarChecked} onValueChange={() => {
-                  setCigarChecked(!cigarChecked);
-                  setCigar(!cigarChecked);
-                }} />
-                <Text>Cigar</Text>
-                <Checkbox style={styles.checkbox} value={marijuanaChecked} onValueChange={() => {
-                  setMarijuanaChecked(!marijuanaChecked);
-                  setMarijuana(!marijuanaChecked);
-                }} />
-                <Text>Marijuana</Text>
+              <Checkbox style={styles.checkbox} value={cigar} onValueChange={() => {
+                setCigar(!cigar);
+              }} />
+              <Text>Cigar</Text>
+              <Checkbox style={styles.checkbox} value={marijuana} onValueChange={() => {
+                setMarijuana(!marijuana);
+              }} />
+              <Text>Marijuana</Text>
             </View>
           </View>
-          {marijuanaChecked && (
+          {/* Consumption Type */}
+          {marijuana && (
             <View style={styles.checkboxContainer}>
               <Text>Consumption Type</Text>
               <View style={styles.checkboxItem}>
-                <Checkbox style={styles.checkbox} value={consumption.edibles} onValueChange={() =>{
-                  setConsumption(prev => ({...prev, edibles: !prev.edibles}))
-                }}/>
+                <Checkbox style={styles.checkbox} value={consumption.edibles} onValueChange={() => {
+                  setConsumption(prev => ({ ...prev, edibles: !prev.edibles }))
+                }} />
                 <Text>Edibles</Text>
-                <Checkbox style={styles.checkbox} value={consumption.vape} onValueChange={() =>{
-                  setConsumption(prev => ({...prev, vape: !prev.vape}))
+                <Checkbox style={styles.checkbox} value={consumption.vape} onValueChange={() => {
+                  setConsumption(prev => ({ ...prev, vape: !prev.vape }))
                 }} />
                 <Text>Vape</Text>
               </View>
               <View style={styles.checkboxItem}>
-                <Checkbox style={styles.checkbox} />
+                <Checkbox style={styles.checkbox} value={consumption.smoke} onValueChange={() => {
+                  setConsumption(prev => ({ ...prev, smoke: !prev.smoke }))
+                }} />
                 <Text>Smoke</Text>
-                <Checkbox style={styles.checkbox} />
+                <Checkbox style={styles.checkbox} value={consumption.tincture} onValueChange={() => {
+                  setConsumption(prev => ({ ...prev, tincture: !prev.tincture }))
+                }} />
                 <Text>Tincture</Text>
               </View>
             </View>
           )}
-          <Button title={photo_uri ? "Pick a new image from camera roll (optional)" : "Pick an image from camera roll (optional)"} onPress={pickImage} />
-          {photo_uri && <Image source={{ uri: photo_uri }} style={styles.image} />}
+
           <Button title={submitLabel} onPress={onSubmit} />
           <Button title="Cancel" onPress={onCancel} color="gray" />
         </View>
       </View>
+
+      {/* Image Enlargement Modal */}
+      <Modal
+        visible={imageModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setImageModalVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.imageModalOverlay}
+          activeOpacity={1}
+          onPress={() => setImageModalVisible(false)}
+        >
+          <Image source={{ uri: selectedImageUri }} style={styles.enlargedImage} resizeMode="contain" />
+        </TouchableOpacity>
+      </Modal>
     </Modal>
   );
 }
@@ -140,6 +204,67 @@ const styles = StyleSheet.create({
   image: {
     width: 200,
     height: 200,
+    alignSelf: 'center',
+    marginVertical: 12,
+    borderRadius: 8,
+  },
+  imagePickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#007bff',
+    borderRadius: 8,
+    borderStyle: 'dashed',
+  },
+  imagePickerText: {
+    color: '#007bff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  galleryContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    marginTop: 15,
+  },
+  galleryImage: {
+    width: 150,
+    height: 150,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#007bff',
+  },
+  addImageButton: {
+    padding: 8,
+  },
+  galleryScroll: {
+    maxHeight: 170,
+  },
+  imageWrapper: {
+    position: 'relative',
+    marginRight: 12,
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    backgroundColor: 'white',
+    borderRadius: 12,
+  },
+  imageModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  enlargedImage: {
+    width: '90%',
+    height: '80%',
   },
   /* end image stuff */
   input: {
@@ -160,6 +285,6 @@ const styles = StyleSheet.create({
   checkboxItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap:10   
+    gap: 10
   },
 }); 
