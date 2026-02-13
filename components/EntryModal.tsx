@@ -109,56 +109,82 @@ export default function EntryModal({ visible, title, content, setTitle, setConte
             </View>
           )}
           {/* Title */}
-          <TextInput
-            value={title}
-            onChangeText={setTitle}
-            style={styles.input}
-            placeholder="Title"
-          />
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Title</Text>
+            <TextInput
+              value={title}
+              onChangeText={setTitle}
+              style={styles.titleInput}
+              placeholder="Enter title..."
+              placeholderTextColor="#999"
+            />
+          </View>
+
           {/* Content */}
-          <TextInput
-            value={content}
-            onChangeText={setContent}
-            style={styles.input}
-            multiline={true}
-            placeholder="Content"
-          />
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Content</Text>
+            <TextInput
+              value={content}
+              onChangeText={setContent}
+              style={styles.contentInput}
+              multiline={true}
+              placeholder="Write your thoughts..."
+              placeholderTextColor="#999"
+              textAlignVertical="top"
+            />
+          </View>
           {/* Cigar / Marijuana */}
           <View style={styles.checkboxContainer}>
             <View style={styles.checkboxItem}>
-              <Checkbox style={styles.checkbox} value={cigar} onValueChange={() => {
-                setCigar(!cigar);
-              }} />
-              <Text>Cigar</Text>
-              <Checkbox style={styles.checkbox} value={marijuana} onValueChange={() => {
-                setMarijuana(!marijuana);
-              }} />
-              <Text>Marijuana</Text>
+              <View style={styles.checkboxWrapper}>
+                <Checkbox style={styles.checkbox} value={cigar} onValueChange={() => {
+                  setCigar(!cigar);
+                  if (!cigar) setMarijuana(false); // Deselect marijuana when selecting cigar
+                }} />
+                <Text>Cigar</Text>
+              </View>
+              <View style={styles.checkboxWrapper}>
+                <Checkbox style={styles.checkbox} value={marijuana} onValueChange={() => {
+                  setMarijuana(!marijuana);
+                  if (!marijuana) setCigar(false); // Deselect cigar when selecting marijuana
+                }} />
+                <Text>Marijuana</Text>
+              </View>
             </View>
           </View>
           {/* Consumption Type */}
           {marijuana && (
-            <View style={styles.checkboxContainer}>
-              <Text>Consumption Type</Text>
-              <View style={styles.checkboxItem}>
-                <Checkbox style={styles.checkbox} value={consumption.edibles} onValueChange={() => {
-                  setConsumption(prev => ({ ...prev, edibles: !prev.edibles }))
-                }} />
-                <Text>Edibles</Text>
-                <Checkbox style={styles.checkbox} value={consumption.vape} onValueChange={() => {
-                  setConsumption(prev => ({ ...prev, vape: !prev.vape }))
-                }} />
-                <Text>Vape</Text>
-              </View>
-              <View style={styles.checkboxItem}>
-                <Checkbox style={styles.checkbox} value={consumption.smoke} onValueChange={() => {
-                  setConsumption(prev => ({ ...prev, smoke: !prev.smoke }))
-                }} />
-                <Text>Smoke</Text>
-                <Checkbox style={styles.checkbox} value={consumption.tincture} onValueChange={() => {
-                  setConsumption(prev => ({ ...prev, tincture: !prev.tincture }))
-                }} />
-                <Text>Tincture</Text>
+            <View style={styles.consumptionContainer}>
+              <Text style={styles.consumptionTitle}>Consumption Type</Text>
+              <View style={styles.consumptionGrid}>
+                <View style={styles.consumptionRow}>
+                  <View style={styles.consumptionItem}>
+                    <Checkbox style={styles.checkbox} value={consumption.edibles} onValueChange={() => {
+                      setConsumption(prev => ({ ...prev, edibles: !prev.edibles }))
+                    }} />
+                    <Text style={styles.consumptionLabel}>Edibles</Text>
+                  </View>
+                  <View style={styles.consumptionItem}>
+                    <Checkbox style={styles.checkbox} value={consumption.vape} onValueChange={() => {
+                      setConsumption(prev => ({ ...prev, vape: !prev.vape }))
+                    }} />
+                    <Text style={styles.consumptionLabel}>Vape</Text>
+                  </View>
+                </View>
+                <View style={styles.consumptionRow}>
+                  <View style={styles.consumptionItem}>
+                    <Checkbox style={styles.checkbox} value={consumption.smoke} onValueChange={() => {
+                      setConsumption(prev => ({ ...prev, smoke: !prev.smoke }))
+                    }} />
+                    <Text style={styles.consumptionLabel}>Smoke</Text>
+                  </View>
+                  <View style={styles.consumptionItem}>
+                    <Checkbox style={styles.checkbox} value={consumption.tincture} onValueChange={() => {
+                      setConsumption(prev => ({ ...prev, tincture: !prev.tincture }))
+                    }} />
+                    <Text style={styles.consumptionLabel}>Tincture</Text>
+                  </View>
+                </View>
               </View>
             </View>
           )}
@@ -267,11 +293,66 @@ const styles = StyleSheet.create({
     height: '80%',
   },
   /* end image stuff */
-  input: {
-    borderBottomWidth: 1,
-    borderColor: '#ccc',
+
+  /* Input Styles */
+  inputContainer: {
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 6,
+  },
+  titleInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: '#f9f9f9',
+  },
+  contentInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 15,
+    backgroundColor: '#f9f9f9',
+    minHeight: 100,
+  },
+
+  /* Consumption Type Styles */
+  consumptionContainer: {
+    marginBottom: 16,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
+    padding: 12,
+  },
+  consumptionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
     marginBottom: 12,
-    padding: 8,
+    textAlign: 'center',
+  },
+  consumptionGrid: {
+    gap: 8,
+  },
+  consumptionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 8,
+  },
+  consumptionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    minWidth: 100,
+  },
+  consumptionLabel: {
+    fontSize: 14,
+    color: '#555',
   },
   checkboxContainer: {
     flexDirection: 'column',
@@ -286,5 +367,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10
+  },
+  checkboxWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
 }); 
