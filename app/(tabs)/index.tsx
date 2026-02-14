@@ -1,6 +1,6 @@
 import EntryModal from '@/components/EntryModal';
 import FAB from '@/components/FAB';
-import Filter, { FilterType } from '@/components/Filter';
+import Filter, { FilterType, SortType } from '@/components/Filter';
 import { SwipeableEntry } from '@/components/SwipeableEntry';
 import { JournalEntry } from '@/interfaces/JournalEntries';
 import { useEffect, useState } from 'react';
@@ -18,6 +18,7 @@ export default function HomeScreen() {
   const [photo_uris, setPhotoUris] = useState<string[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<SortType>('date');
   //const [consumptionType, setConsumption] = useState<ProductConsumption[]>([]);
   // Fetch entries on mount and after adding
 
@@ -50,7 +51,23 @@ export default function HomeScreen() {
       }
       return true;
     });
-    setEntries(filtered);
+    
+    // Apply sorting
+    const sorted = [...filtered].sort((a, b) => {
+      if (sortBy === 'date') {
+        // Sort by date (newest first)
+        return new Date(b.entry_date).getTime() - new Date(a.entry_date).getTime();
+      } else if (sortBy === 'name-asc') {
+        // Sort by name A-Z
+        return a.title.toLowerCase().localeCompare(b.title.toLowerCase());
+      } else if (sortBy === 'name-desc') {
+        // Sort by name Z-A
+        return b.title.toLowerCase().localeCompare(a.title.toLowerCase());
+      }
+      return 0;
+    });
+    
+    setEntries(sorted);
   };
   // Add entry
   const handleAdd = async () => {
@@ -113,12 +130,19 @@ export default function HomeScreen() {
       await db.initializeDatabase();
       await fetchEntries();
     })();
-  }, [selectedFilter, search]);
+  }, [selectedFilter, search, sortBy]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
-        <Filter selected={selectedFilter} onChange={setSelectedFilter} search={search} onSearchChange={setSearch} />
+        <Filter 
+          selected={selectedFilter} 
+          onChange={setSelectedFilter} 
+          search={search} 
+          onSearchChange={setSearch}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+        />
         <FlatList
           data={journalEntries}
           keyExtractor={item => item.entry_id?.toString() ?? Math.random().toString()}
@@ -144,7 +168,7 @@ export default function HomeScreen() {
             setEntryId(null);
             resetEntryUseStates();
           }}
-          submitLabel={entryId ? 'Save Edit' : 'Add Entry'}
+          submitLabel={entryId ? 'Save' : 'Add Entry'}
           cigar={cigar}
           marijuana={marijuana}
           photo_uris={photo_uris}

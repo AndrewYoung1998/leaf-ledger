@@ -9,13 +9,13 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
     );
 
     let currentDbVersion = result?.user_version ?? 0;
-    console.log('Current DB version:', currentDbVersion);
+    //console.log('Current DB version:', currentDbVersion);
     if (currentDbVersion >= DATABASE_VERSION) {
         return;
     }
 
     if (currentDbVersion === 0) {
-        console.log('Migrating to version 1');
+        //console.log('Migrating to version 1');
 
         await addPhotoUriColumn()
 
@@ -23,7 +23,7 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
     }
 
     if (currentDbVersion === 1) {
-        console.log('Migrating to version 2');
+        //console.log('Migrating to version 2');
 
         await convertPhotoUriToArray(db);
 

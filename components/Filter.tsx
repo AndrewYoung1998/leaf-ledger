@@ -1,13 +1,17 @@
-import React from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 type FilterType = 'all' | 'cigar' | 'marijuana' | 'none';
+type SortType = 'date' | 'name-asc' | 'name-desc';
 
 interface FilterProps {
   selected: FilterType;
   onChange: (type: FilterType) => void;
   search: string;
   onSearchChange: (text: string) => void;
+  sortBy: SortType;
+  onSortChange: (sort: SortType) => void;
 }
 
 const FILTERS: { label: string; value: FilterType }[] = [
@@ -17,55 +21,127 @@ const FILTERS: { label: string; value: FilterType }[] = [
   { label: 'None', value: 'none' },
 ];
 
-export default function Filter({ selected, onChange, search, onSearchChange }: FilterProps) {
+const SORT_OPTIONS: { label: string; value: SortType; icon: string }[] = [
+  { label: 'Date (Newest First)', value: 'date', icon: 'calendar-outline' },
+  { label: 'Name (A-Z)', value: 'name-asc', icon: 'arrow-up-outline' },
+  { label: 'Name (Z-A)', value: 'name-desc', icon: 'arrow-down-outline' },
+];
+
+export default function Filter({ selected, onChange, search, onSearchChange, sortBy, onSortChange }: FilterProps) {
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const handleFilterSelect = (type: FilterType) => {
+    onChange(type);
+    setModalVisible(false);
+  };
+
+  const handleSortSelect = (sort: SortType) => {
+    onSortChange(sort);
+    setModalVisible(false);
+  };
+
   return (
     <View style={styles.wrapper}>
-      <TextInput
-        style={styles.searchBox}
-        placeholder="Search entries..."
-        value={search}
-        onChangeText={onSearchChange}
-        autoCorrect={false}
-        autoCapitalize="none"
-        clearButtonMode="while-editing"
-      />
-      <View style={styles.container}>
-        {FILTERS.map(filter => (
-          <TouchableOpacity
-            key={filter.value}
-            style={[
-              styles.button,
-              selected === filter.value && styles.selectedButton,
-            ]}
-            onPress={() => onChange(filter.value)}
-          >
-            <Text
-              style={[
-                styles.buttonText,
-                selected === filter.value && styles.selectedButtonText,
-              ]}
-            >
-              {filter.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      {/* Sort Button */}
-      <View style={styles.sortContainer}>
-        <TouchableOpacity
-          style={styles.sortButton}
-          onPress={() => {
-            // Cycle through sort options: 'date', 'a-z', 'z-a'
-            // We'll use a custom event since Filter is controlled by parent
-            // So, we emit a custom event for parent to handle sort change
-            if (typeof (onChange as any).sortChange === 'function') {
-              (onChange as any).sortChange();
-            }
-          }}
+      <View style={styles.searchRow}>
+        <TextInput
+          style={styles.searchBox}
+          placeholder="Search entries..."
+          value={search}
+          onChangeText={onSearchChange}
+          autoCorrect={false}
+          autoCapitalize="none"
+          clearButtonMode="while-editing"
+        />
+        <TouchableOpacity 
+          style={styles.filterIconButton}
+          onPress={() => setModalVisible(true)}
         >
-          
+          <Ionicons name="filter" size={24} color="#007bff" />
         </TouchableOpacity>
       </View>
-      </View>
+
+      {/* Filter Modal */}
+      <Modal
+        visible={modalVisible}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setModalVisible(false)}
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Filter & Sort</Text>
+            
+            {/* Filter Section */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Filter by Type</Text>
+              <View style={styles.filterList}>
+                {FILTERS.map(filter => (
+                  <TouchableOpacity
+                    key={filter.value}
+                    style={[
+                      styles.filterOption,
+                      selected === filter.value && styles.selectedFilterOption,
+                    ]}
+                    onPress={() => handleFilterSelect(filter.value)}
+                  >
+                    <Text
+                      style={[
+                        styles.filterOptionText,
+                        selected === filter.value && styles.selectedFilterOptionText,
+                      ]}
+                    >
+                      {filter.label}
+                    </Text>
+                    {selected === filter.value && (
+                      <Ionicons name="checkmark" size={20} color="#007bff" />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            {/* Sort Section */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Sort by</Text>
+              <View style={styles.filterList}>
+                {SORT_OPTIONS.map(sort => (
+                  <TouchableOpacity
+                    key={sort.value}
+                    style={[
+                      styles.filterOption,
+                      sortBy === sort.value && styles.selectedFilterOption,
+                    ]}
+                    onPress={() => handleSortSelect(sort.value)}
+                  >
+                    <View style={styles.sortOptionContent}>
+                      <Ionicons 
+                        name={sort.icon as any} 
+                        size={18} 
+                        color={sortBy === sort.value ? '#007bff' : '#666'} 
+                      />
+                      <Text
+                        style={[
+                          styles.filterOptionText,
+                          sortBy === sort.value && styles.selectedFilterOptionText,
+                        ]}
+                      >
+                        {sort.label}
+                      </Text>
+                    </View>
+                    {sortBy === sort.value && (
+                      <Ionicons name="checkmark" size={20} color="#007bff" />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -75,52 +151,102 @@ const styles = StyleSheet.create({
     marginVertical: 12,
     paddingHorizontal: 12,
   },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
   searchBox: {
+    flex: 5,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
     paddingHorizontal: 14,
-    paddingVertical: 8,
-    marginBottom: 10,
+    paddingVertical: 10,
     backgroundColor: '#fff',
+    fontSize: 16,
   },
-  container: {
-    flexDirection: 'row',
+  filterIconButton: {
+    flex: 1,
+    alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-  },
-  button: {
-    paddingVertical: 6,
+    paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: '#eee',
+    backgroundColor: '#f5f5f5',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    minHeight: 44,
   },
-  selectedButton: {
-    backgroundColor: '#007bff',
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  buttonText: {
+  modalContent: {
+    width: '80%',
+    maxHeight: '70%',
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 20,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  section: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+    marginBottom: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  filterList: {
+    gap: 8,
+  },
+  filterOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: '#f5f5f5',
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  selectedFilterOption: {
+    backgroundColor: '#e3f2fd',
+    borderColor: '#007bff',
+  },
+  filterOptionText: {
+    fontSize: 16,
     color: '#333',
     fontWeight: '500',
   },
-  selectedButtonText: {
-    color: '#fff',
+  selectedFilterOptionText: {
+    color: '#007bff',
+    fontWeight: '600',
   },
-  sortContainer: {
+  sortOptionContent: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  sortButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: '#eee',
-  },
-  sortButtonText: {
-    color: '#333',
-    fontWeight: '500',
+    alignItems: 'center',
+    gap: 10,
   },
 });
 
-export type { FilterType };
+export type { FilterType, SortType };
 

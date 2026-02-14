@@ -36,13 +36,15 @@ export function SwipeableEntry({ item, onDelete, onEdit }: SwipeableEntryProps) 
         <Text style={styles.title}>
           {item && 'title' in item ? (item as any).title : 'No Name'}
         </Text>
-        <Text>{item.content}</Text>
-        <Text>{item.cigar ? 'Cigar' : item.marijuana ? 'Marijuana' : 'None'}</Text>
-        <Text style={styles.date}>
-          {item.entry_date
-            ? new Date(item.entry_date).toLocaleDateString()
-            : ''}
-        </Text>
+        <Text style={styles.content}>{item.content}</Text>
+        <View style={styles.bottomRow}>
+          <Text style={styles.type}>{item.cigar ? 'Cigar' : item.marijuana ? 'Marijuana' : 'None'}</Text>
+          <Text style={styles.date}>
+            {item.entry_date
+              ? new Date(item.entry_date).toLocaleDateString()
+              : ''}
+          </Text>
+        </View>
       </View>
     </Swipeable>
   );
@@ -59,11 +61,26 @@ const styles = StyleSheet.create({
   title: {
     fontWeight: 'bold',
     fontSize: 16,
+    marginBottom: 6,
+  },
+  content: {
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 8,
+  },
+  bottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  type: {
+    fontSize: 12,
+    color: '#666',
   },
   date: {
     fontSize: 12,
     color: '#888',
-    marginTop: 4,
   },
   deleteButton: {
     backgroundColor: '#ff4444',
