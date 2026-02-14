@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import Checkbox from 'expo-checkbox';
 import * as ImagePicker from 'expo-image-picker';
-import React, { useEffect, useState } from 'react';
-import { Alert, Button, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 interface Consumption {
   edibles: boolean;
@@ -39,9 +39,6 @@ export default function EntryModal({ visible, title, content, setTitle, setConte
   const [imageModalVisible, setImageModalVisible] = useState(false);
   const [selectedImageUri, setSelectedImageUri] = useState<string>('');
 
-  useEffect(() => {
-    // No need to sync photo_uris here since it's controlled by parent
-  }, []);
 
   const pickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -71,12 +68,13 @@ export default function EntryModal({ visible, title, content, setTitle, setConte
   return (
     <Modal
       visible={visible}
-      animationType="slide"
+      animationType="fade"
       transparent
       onRequestClose={onCancel}
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
+        <Text style={styles.inputLabel}>Gallery</Text>
           {/* Image Picker / Gallery */}
           {photo_uris.length === 0 ? (
             <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
@@ -122,7 +120,7 @@ export default function EntryModal({ visible, title, content, setTitle, setConte
 
           {/* Content */}
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Content</Text>
+            <Text style={styles.inputLabel}>Description</Text>
             <TextInput
               value={content}
               onChangeText={setContent}
@@ -189,8 +187,15 @@ export default function EntryModal({ visible, title, content, setTitle, setConte
             </View>
           )}
 
-          <Button title={submitLabel} onPress={onSubmit} />
-          <Button title="Cancel" onPress={onCancel} color="gray" />
+          {/* Action Buttons */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.submitButton} onPress={onSubmit}>
+              <Text style={styles.submitButtonText}>{submitLabel}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
@@ -372,5 +377,43 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  
+  /* Button Styles */
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginTop: 20,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  cancelButtonText: {
+    color: '#666',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  submitButton: {
+    flex: 1,
+    backgroundColor: '#007bff',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  submitButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
 }); 
