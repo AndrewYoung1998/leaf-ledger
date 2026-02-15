@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Palette } from '@/constants/Colors';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -52,7 +53,7 @@ export function SwipeableEntry({ item, onDelete, onEdit }: SwipeableEntryProps) 
 
 const styles = StyleSheet.create({
   entry: {
-    backgroundColor: '#f9f9f9',
+    backgroundColor: Palette.cloudWhite,
     margin: 8,
     padding: 12,
     borderRadius: 8,
@@ -62,10 +63,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
     marginBottom: 6,
+    color: Palette.sageShadow,
   },
   content: {
     fontSize: 14,
-    color: '#333',
+    color: Palette.sageShadow,
     marginBottom: 8,
   },
   bottomRow: {
@@ -76,11 +78,11 @@ const styles = StyleSheet.create({
   },
   type: {
     fontSize: 12,
-    color: '#666',
+    color: Palette.sageShadowLight,
   },
   date: {
     fontSize: 12,
-    color: '#888',
+    color: Palette.sageShadowLight,
   },
   deleteButton: {
     backgroundColor: '#ff4444',
@@ -98,7 +100,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   editButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: Palette.cedarwood,
     justifyContent: 'center',
     alignItems: 'center',
     width: 80,

@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Palette } from '@/constants/Colors';
 import React from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 
@@ -25,7 +26,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#007AFF',
+    backgroundColor: Palette.cedarwood,
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 8, // Android shadow

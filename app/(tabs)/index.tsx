@@ -2,10 +2,12 @@ import EntryModal from '@/components/EntryModal';
 import FAB from '@/components/FAB';
 import Filter, { FilterType, SortType } from '@/components/Filter';
 import { SwipeableEntry } from '@/components/SwipeableEntry';
+import { Palette } from '@/constants/Colors';
 import { JournalEntry } from '@/interfaces/JournalEntries';
 import { useEffect, useState } from 'react';
-import { FlatList, SafeAreaView, StyleSheet, Text } from 'react-native';
+import { FlatList, StyleSheet, Text } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import db, { addJournalEntry } from '../../hooks/database/useDatabase';
 export default function HomeScreen() {
   const [journalEntries, setEntries] = useState<JournalEntry[]>([]);
@@ -206,14 +208,14 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: '90%',
-    backgroundColor: 'white',
+    backgroundColor: Palette.cloudWhite,
     borderRadius: 8,
     padding: 20,
     elevation: 5,
   },
   input: {
     borderBottomWidth: 1,
-    borderColor: '#ccc',
+    borderColor: Palette.border,
     marginBottom: 12,
     padding: 8,
   },

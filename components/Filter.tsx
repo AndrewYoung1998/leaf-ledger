@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Palette } from '@/constants/Colors';
 import React, { useState } from 'react';
 import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
@@ -56,7 +57,7 @@ export default function Filter({ selected, onChange, search, onSearchChange, sor
           style={styles.filterIconButton}
           onPress={() => setModalVisible(true)}
         >
-          <Ionicons name="filter" size={24} color="#007bff" />
+          <Ionicons name="filter" size={24} color={Palette.cedarwood} />
         </TouchableOpacity>
       </View>
 
@@ -97,7 +98,7 @@ export default function Filter({ selected, onChange, search, onSearchChange, sor
                       {filter.label}
                     </Text>
                     {selected === filter.value && (
-                      <Ionicons name="checkmark" size={20} color="#007bff" />
+                      <Ionicons name="checkmark" size={20} color={Palette.cedarwood} />
                     )}
                   </TouchableOpacity>
                 ))}
@@ -121,7 +122,7 @@ export default function Filter({ selected, onChange, search, onSearchChange, sor
                       <Ionicons 
                         name={sort.icon as any} 
                         size={18} 
-                        color={sortBy === sort.value ? '#007bff' : '#666'} 
+                        color={sortBy === sort.value ? Palette.cedarwood : Palette.sageShadowLight} 
                       />
                       <Text
                         style={[
@@ -133,7 +134,7 @@ export default function Filter({ selected, onChange, search, onSearchChange, sor
                       </Text>
                     </View>
                     {sortBy === sort.value && (
-                      <Ionicons name="checkmark" size={20} color="#007bff" />
+                      <Ionicons name="checkmark" size={20} color={Palette.cedarwood} />
                     )}
                   </TouchableOpacity>
                 ))}
@@ -159,11 +160,11 @@ const styles = StyleSheet.create({
   searchBox: {
     flex: 5,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: Palette.border,
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    backgroundColor: '#fff',
+    backgroundColor: Palette.cloudWhite,
     fontSize: 16,
   },
   filterIconButton: {
@@ -173,9 +174,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Palette.cloudWhite,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: Palette.border,
     minHeight: 44,
   },
   modalOverlay: {
@@ -199,7 +200,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
+    color: Palette.sageShadow,
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -209,7 +210,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666',
+    color: Palette.sageShadowLight,
     marginBottom: 10,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -224,21 +225,21 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Palette.cloudWhite,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: Palette.border,
   },
   selectedFilterOption: {
-    backgroundColor: '#e3f2fd',
-    borderColor: '#007bff',
+    backgroundColor: '#f5efe9',
+    borderColor: Palette.cedarwood,
   },
   filterOptionText: {
     fontSize: 16,
-    color: '#333',
+    color: Palette.sageShadow,
     fontWeight: '500',
   },
   selectedFilterOptionText: {
-    color: '#007bff',
+    color: Palette.cedarwood,
     fontWeight: '600',
   },
   sortOptionContent: {

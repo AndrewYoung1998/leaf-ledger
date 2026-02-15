@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Palette } from '@/constants/Colors';
 import Checkbox from 'expo-checkbox';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from 'react';
@@ -78,7 +79,7 @@ export default function EntryModal({ visible, title, content, setTitle, setConte
           {/* Image Picker / Gallery */}
           {photo_uris.length === 0 ? (
             <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
-              <Ionicons name="image-outline" size={32} color="#007bff" />
+              <Ionicons name="image-outline" size={32} color={Palette.cedarwood} />
               <Text style={styles.imagePickerText}>Add Photo</Text>
             </TouchableOpacity>
           ) : (
@@ -102,7 +103,7 @@ export default function EntryModal({ visible, title, content, setTitle, setConte
                 ))}
               </ScrollView>
               <TouchableOpacity style={styles.addImageButton} onPress={pickImage}>
-                <Ionicons name="add-circle" size={36} color="#007bff" />
+                <Ionicons name="add-circle" size={36} color={Palette.cedarwood} />
               </TouchableOpacity>
             </View>
           )}
@@ -227,7 +228,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: '90%',
-    backgroundColor: 'white',
+    backgroundColor: Palette.cloudWhite,
     borderRadius: 8,
     padding: 20,
     elevation: 5,
@@ -247,12 +248,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#007bff',
+    borderColor: Palette.cedarwood,
     borderRadius: 8,
     borderStyle: 'dashed',
   },
   imagePickerText: {
-    color: '#007bff',
+    color: Palette.cedarwood,
     fontSize: 14,
     fontWeight: '500',
   },
@@ -268,7 +269,7 @@ const styles = StyleSheet.create({
     height: 150,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: '#007bff',
+    borderColor: Palette.cedarwood,
   },
   addImageButton: {
     padding: 8,
@@ -284,7 +285,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -5,
     right: -5,
-    backgroundColor: 'white',
+    backgroundColor: Palette.cloudWhite,
     borderRadius: 12,
   },
   imageModalOverlay: {
@@ -306,38 +307,40 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
+    color: Palette.sageShadow,
     marginBottom: 6,
   },
   titleInput: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: Palette.border,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: Palette.cloudWhite,
   },
   contentInput: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: Palette.border,
     borderRadius: 8,
     padding: 12,
     fontSize: 15,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: Palette.cloudWhite,
     minHeight: 100,
   },
 
   /* Consumption Type Styles */
   consumptionContainer: {
     marginBottom: 16,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Palette.cloudWhite,
     borderRadius: 8,
     padding: 12,
+    borderWidth: 1,
+    borderColor: Palette.border,
   },
   consumptionTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
+    color: Palette.sageShadow,
     marginBottom: 12,
     textAlign: 'center',
   },
@@ -357,7 +360,7 @@ const styles = StyleSheet.create({
   },
   consumptionLabel: {
     fontSize: 14,
-    color: '#555',
+    color: Palette.sageShadowLight,
   },
   checkboxContainer: {
     flexDirection: 'column',
@@ -388,23 +391,23 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Palette.cloudWhite,
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: Palette.border,
   },
   cancelButtonText: {
-    color: '#666',
+    color: Palette.sageShadowLight,
     fontSize: 16,
     fontWeight: '600',
   },
   submitButton: {
     flex: 1,
-    backgroundColor: '#007bff',
+    backgroundColor: Palette.cedarwood,
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 8,
