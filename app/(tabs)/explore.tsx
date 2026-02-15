@@ -1,5 +1,5 @@
 import { Palette } from '@/constants/Colors';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -8,18 +8,20 @@ export default function TabTwoScreen() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
-        <Text>Explore</Text>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Explore</Text>
+        </View>
       </SafeAreaView>
     </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
     color: Palette.sageShadow,
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+    
   },
   titleContainer: {
     flexDirection: 'row',
