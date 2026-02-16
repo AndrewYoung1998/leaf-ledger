@@ -4,11 +4,14 @@ import Filter, { FilterType, SortType } from '@/components/Filter';
 import { SwipeableEntry } from '@/components/SwipeableEntry';
 import { Palette } from '@/constants/Colors';
 import { JournalEntry } from '@/interfaces/JournalEntries';
+import * as Location from 'expo-location';
+
 import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import db, { addJournalEntry } from '../../hooks/database/useDatabase';
+
 export default function HomeScreen() {
   const [journalEntries, setEntries] = useState<JournalEntry[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -23,7 +26,8 @@ export default function HomeScreen() {
   const [sortBy, setSortBy] = useState<SortType>('date');
   //const [consumptionType, setConsumption] = useState<ProductConsumption[]>([]);
   // Fetch entries on mount and after adding
-
+const [location, setLocation] = useState<Location.LocationGeocodedAddress[] | null>(null);
+const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const resetEntryUseStates = () => {
     setTitle('');
     setContent('');
@@ -129,10 +133,32 @@ export default function HomeScreen() {
   };
   useEffect(() => {
     (async () => {
+      async function getCurrentLocation() {
+      
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          setErrorMsg('Permission to access location was denied');
+          return;
+        }
+  
+        let locations = await Location.getCurrentPositionAsync({});
+        let stateInfo = await Location.reverseGeocodeAsync(locations.coords);
+        setLocation(stateInfo);
+        console.log('Geocoded result:', stateInfo); // log right after fetch
+      }
+  
+      //await getCurrentLocation();
       await db.initializeDatabase();
       await fetchEntries();
     })();
   }, [selectedFilter, search, sortBy]);
+
+  // Log location state whenever it updates
+  useEffect(() => {
+    if (location) {
+      console.log('Location state:', location);
+    }
+  }, [location]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
