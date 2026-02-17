@@ -156,6 +156,7 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
         let stateInfo = await Location.reverseGeocodeAsync(positions.coords);
         const regionInfo = stateInfo[0]?.region ?? null;
         setLocationData(regionInfo);
+        console.log('Region on load:', regionInfo);
       } catch (e) {
         const msg = 'Could not get location';
         setErrorMsg(msg);
