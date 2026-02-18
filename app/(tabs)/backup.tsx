@@ -43,14 +43,14 @@ async function exportAndShare(format: 'csv' | 'json') {
     let fileContent: string;
     let filename: string;
     let mimeType: string;
-
+    const now: Date = new Date();
     if (format === 'json') {
         fileContent = formatJson(data);
-        filename = `leaf_ledger_journal_entries_export.json`;
+        filename = 'leaf_ledger_journal_entries_export_'+now.toISOString()+'.json';
         mimeType = 'application/json';
     } else {
         fileContent = formatCsv(data);
-        filename = `leaf_ledger_journal_entries_export.csv`;
+        filename = 'leaf_ledger_journal_entries_export_'+ now.toISOString()+'.csv';
         mimeType = 'text/csv';
     }
 
@@ -58,9 +58,7 @@ async function exportAndShare(format: 'csv' | 'json') {
 
     try {
         file.create();
-        file.write(fileContent, {
-            encoding: 'utf8'
-        });
+        file.write(fileContent);
 
         // Check if sharing is available
         if (await Sharing.isAvailableAsync()) {
