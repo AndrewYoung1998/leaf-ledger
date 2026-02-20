@@ -1,75 +1,10 @@
 import { Palette } from '@/constants/Colors';
-import { getJournalEntries } from '@/hooks/database/useDatabase';
+import { exportAndShare } from '@/utils/exportJournal';
 import { Ionicons } from '@expo/vector-icons';
-import { File, Paths } from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-function formatJson(data: any[]): string {
-    return JSON.stringify(data, null, 2); // Pretty print with 2 spaces
-}
-
-function formatCsv(data: any[]): string {
-    if (data.length === 0) return '';
-
-    const headers = Object.keys(data[0]);
-    const csvRows = [headers.join(',')]; // Add header row
-
-    for (const row of data) {
-        const values = headers.map(header => {
-            const value = row[header];
-            // Handle potential commas or quotes within values by enclosing them in quotes
-            if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
-                return `"${value.replace(/"/g, '""')}"`;
-            }
-            return value;
-        });
-        csvRows.push(values.join(','));
-    }
-
-    return csvRows.join('\n');
-}
-
-async function exportAndShare(format: 'csv' | 'json') {
-    const data = await getJournalEntries();
-    if (data.length === 0) {
-        alert('No data to export.');
-        return;
-    }
-
-    let fileContent: string;
-    let filename: string;
-    let mimeType: string;
-    const now: Date = new Date();
-    if (format === 'json') {
-        fileContent = formatJson(data);
-        filename = 'leaf_ledger_journal_entries_export_'+now.toISOString()+'.json';
-        mimeType = 'application/json';
-    } else {
-        fileContent = formatCsv(data);
-        filename = 'leaf_ledger_journal_entries_export_'+ now.toISOString()+'.csv';
-        mimeType = 'text/csv';
-    }
-
-    const file = new File(Paths.cache, filename);
-
-    try {
-        file.create();
-        file.write(fileContent);
-
-        // Check if sharing is available
-        if (await Sharing.isAvailableAsync()) {
-            await Sharing.shareAsync(file.uri, {mimeType});
-        } else {
-            alert('Sharing is not available on this platform.');
-        }
-    } catch (error) {
-        console.error('Error exporting or sharing file:', error);
-    }
-}
 
 export default function BackupScreen() {
     return (
