@@ -5,7 +5,6 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { Tabs } from 'expo-router';
 import React from 'react';
 
-import { Ionicons } from '@expo/vector-icons';
 import { Platform } from 'react-native';
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -37,13 +36,6 @@ export default function TabLayout() {
           title: 'Settings',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="gearshape.fill" color={color} />,
         }}  
-      />
-      <Tabs.Screen
-        name="backup"
-        options={{
-            title: 'Backup',
-            tabBarIcon: ({ color }) => <Ionicons name="arrow-down-circle-outline" size={28} color={color} />,
-        }}
       />
     </Tabs>
   );

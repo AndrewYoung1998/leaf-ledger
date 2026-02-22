@@ -165,8 +165,6 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
     })();
   }, []);
 
-
-
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
