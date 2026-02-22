@@ -6,8 +6,9 @@ import { Palette } from '@/constants/Colors';
 import { JournalEntry } from '@/interfaces/JournalEntries';
 import * as Location from 'expo-location';
 
+import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text } from 'react-native';
+import { Alert, FlatList, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import db, { addJournalEntry } from '../../hooks/database/useDatabase';
@@ -26,8 +27,10 @@ export default function HomeScreen() {
   const [sortBy, setSortBy] = useState<SortType>('date');
   //const [consumptionType, setConsumption] = useState<ProductConsumption[]>([]);
   // Fetch entries on mount and after adding
-const [locationData, setLocationData] = useState<string | null>(null);
-const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [locationData, setLocationData] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
   const resetEntryUseStates = () => {
     setTitle('');
     setContent('');
@@ -106,10 +109,18 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
     setEntries(entries);
     await fetchEntries();
   };
-  const handleDelete = async (entry_id: number) => {
-    await db.deleteJournalEntry(entry_id);
+  const handleDelete = (entry_id: number) => {
+    setPendingDeleteId(entry_id);
+    setDeleteConfirmVisible(true);
+  };
+
+  const confirmDelete = async () => {
+    if (pendingDeleteId === null) return;
+    await db.deleteJournalEntry(pendingDeleteId);
     const entries = await db.getJournalEntries();
     setEntries(entries);
+    setPendingDeleteId(null);
+    setDeleteConfirmVisible(false);
   };
   // Edit entry
   const handleEdit = async (entry_id: number) => {
@@ -209,6 +220,44 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
           setMarijuana={setMarijuana}
           setPhotoUris={setPhotoUris}
         />
+
+        <Modal
+          visible={deleteConfirmVisible}
+          animationType="fade"
+          transparent
+          onRequestClose={() => setDeleteConfirmVisible(false)}
+        >
+          <TouchableOpacity
+            style={styles.deleteModalOverlay}
+            activeOpacity={1}
+            onPress={() => setDeleteConfirmVisible(false)}
+          >
+            <View style={styles.deleteModalContent}>
+              <View style={styles.deleteModalIconWrap}>
+                <Ionicons name="trash-outline" size={32} color="#e53935" />
+              </View>
+              <Text style={styles.deleteModalTitle}>Delete Entry</Text>
+              <Text style={styles.deleteModalMessage}>
+                Are you sure you want to delete this entry? This cannot be undone.
+              </Text>
+              <View style={styles.deleteModalButtons}>
+                <TouchableOpacity
+                  style={styles.deleteModalCancelBtn}
+                  onPress={() => {
+                    setPendingDeleteId(null);
+                    setDeleteConfirmVisible(false);
+                  }}
+                >
+                  <Text style={styles.deleteModalCancelBtnText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.deleteModalDeleteBtn} onPress={confirmDelete}>
+                  <Ionicons name="trash" size={18} color="white" />
+                  <Text style={styles.deleteModalDeleteBtnText}>Delete</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </Modal>
       </SafeAreaView>
     </GestureHandlerRootView>
   );
@@ -249,5 +298,80 @@ const styles = StyleSheet.create({
     borderColor: Palette.border,
     marginBottom: 12,
     padding: 8,
+  },
+  deleteModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  deleteModalContent: {
+    width: '85%',
+    backgroundColor: Palette.cloudWhite,
+    borderRadius: 12,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: Palette.border,
+    alignItems: 'center',
+  },
+  deleteModalIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(229,57,53,0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  deleteModalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: Palette.sageShadow,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  deleteModalMessage: {
+    fontSize: 15,
+    color: Palette.sageShadowLight,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  deleteModalButtons: {
+    flexDirection: 'row',
+    width: '100%',
+    gap: 12,
+  },
+  deleteModalCancelBtn: {
+    flex: 1,
+    backgroundColor: Palette.cloudWhite,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Palette.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteModalCancelBtnText: {
+    color: Palette.sageShadow,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  deleteModalDeleteBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#e53935',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  deleteModalDeleteBtnText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
